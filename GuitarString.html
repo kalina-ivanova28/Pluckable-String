@@ -1,0 +1,88 @@
+<!-- Adding a start button -->
+<input type='button' value='play' onclick='context.resume()' id='Play'>
+<!-- Step 5 -->
+<!--Adding a source choice-->
+<p>Source</p>
+<select id='Source'>
+  <option value='noise'>Noise</option>
+  <option value='sine'>Sine</option>
+  <option value='sawtooth'>Sawtooth</option>
+  <option value='triangle'>Triangle</option>
+  <option value='square'>Square</option>
+</select>
+<!-- Adding decay slider -->
+<p>Decay</p>
+<input type="range" min=0 max=1000 value=0.2 step=0.01 id="Decay">
+<span id="DecayLabel"></span>
+<!-- Adding gain slider -->
+<p>Gain</p>
+<input type='range' min=0.5 max=0.99 value=0.8 step='any' id='Gain'>
+<span id='GainLabel'></span>
+<!-- Step 3 -->
+<!-- Adding delay slider -->
+<p>Delay (ms)</p>
+<input type='range' id='Delay' min=0 max=20 value=10 step='any'>
+<span id='DelayLabel'></span>
+<!-- Adding frequency filter slider -->
+<p>Cut-off Frequency (Hz)</p>
+<input type='range' id='Freq' min=0 max=10000 value=600 step='any'>
+<span id='FreqLabel'></span>
+<!-- Adding width slider -->
+<p>Width (ms)</p>
+<input type='range' id='Width' min=0 max=20 value=10 step='any'>
+<span id='WidthLabel'></span>
+<!-- Recorder Controls -->
+<!-- <p></p>
+<script src="recorder.js"></script>
+<input type="button" value="play" id="Play">
+<input type="button" value="record" id="Start">
+<input type="button" value="stop" id="Stop">
+<audio controls></audio> -->
+<script>
+  //Step 1
+  //Define necessary classes to produce sound and context, aswell as gain, delay and feedback
+  var context = new AudioContext()
+  let tone = new OscillatorNode(context,{frequency:600})
+  tone.start()
+  toneGain = new GainNode(context,{gain:0})
+  //Step 2
+  var delay= new DelayNode(context,{delayTime:0.002})
+  var feedback= new GainNode(context,{gain:0.99})
+  //Step 4
+  //Add lowpass filter and change Q value
+  var biquadFilter = context.createBiquadFilter();
+  biquadFilter.Q.value = -3.01;
+  //Make all necessary connections
+  tone.connect(toneGain)
+  //Step 1
+  toneGain.connect(delay)
+  delay.connect(feedback)
+  feedback.connect(delay)
+  delay.connect(context.destination)
+  biquadFilter.connect(context.destination)
+  //Functions for the sliders
+  Delay.oninput = () =>  delay.delayTime.value = Delay.value
+  Gain.oninput = () => feedback.gain.value = Gain.value
+  Freq.oninput = () => biquadFilter.frequency=Freq.value
+  Source.onchange = () =>  tone.type = this.value
+  Width.oninput = () => WidthLabel.innerHTML = Width.value
+
+  //Play Function
+  Play.onclick = () => {
+    context.resume()
+    let now = context.currentTime
+    toneGain.gain.setValueAtTime(1, now)
+    toneGain.gain.linearRampToValueAtTime(0, now + Decay.value/1000)
+
+    // // Recording
+    // recorder = new Recorder(delay) //change output to whichever node you want to record
+    // Start.onclick = () => {
+    //   context.resume()
+    //   recorder.record()
+    // }
+    // Stop.onclick = () => {
+    //   recorder.stop()
+    //   recorder.exportWAV(blob => document.querySelector("audio").src = URL.createObjectURL(blob) )
+    // }
+  }
+</script>
